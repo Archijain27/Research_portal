@@ -34,16 +34,19 @@ if (isProduction && process.env.DATABASE_URL) {
       pgQuery = pgQuery.replace(/INTEGER PRIMARY KEY AUTOINCREMENT/g, 'SERIAL PRIMARY KEY');
       pgQuery = pgQuery.replace(/AUTOINCREMENT/g, '');
       
-      pool.query(pgQuery, params)
+      // FIX: Return the promise from pool.query
+      return pool.query(pgQuery, params)
         .then(result => {
           if (callback) callback.call({ 
             lastID: result.rows[0]?.id || result.insertId,
             changes: result.rowCount 
           }, null);
+          return result;
         })
         .catch(err => {
           console.error('Database error:', err);
           if (callback) callback.call({ lastID: null, changes: 0 }, err);
+          throw err;
         });
     },
     get: (query, params = [], callback) => {
@@ -51,11 +54,15 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgQuery = pgQuery.replace(/\?/g, () => `$${paramIndex++}`);
       
-      pool.query(pgQuery, params)
-        .then(result => callback(null, result.rows[0] || null))
+      return pool.query(pgQuery, params)
+        .then(result => {
+          if (callback) callback(null, result.rows[0] || null);
+          return result.rows[0] || null;
+        })
         .catch(err => {
           console.error('Database error:', err);
-          callback(err, null);
+          if (callback) callback(err, null);
+          throw err;
         });
     },
     all: (query, params = [], callback) => {
@@ -63,11 +70,15 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgQuery = pgQuery.replace(/\?/g, () => `$${paramIndex++}`);
       
-      pool.query(pgQuery, params)
-        .then(result => callback(null, result.rows || []))
+      return pool.query(pgQuery, params)
+        .then(result => {
+          if (callback) callback(null, result.rows || []);
+          return result.rows || [];
+        })
         .catch(err => {
           console.error('Database error:', err);
-          callback(err, []);
+          if (callback) callback(err, []);
+          throw err;
         });
     }
   };
