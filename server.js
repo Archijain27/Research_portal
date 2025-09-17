@@ -34,35 +34,48 @@ if (isProduction && process.env.DATABASE_URL) {
       pgQuery = pgQuery.replace(/INTEGER PRIMARY KEY AUTOINCREMENT/g, 'SERIAL PRIMARY KEY');
       pgQuery = pgQuery.replace(/AUTOINCREMENT/g, '');
       
-      // FIX: Return the promise from pool.query
-      return pool.query(pgQuery, params)
-        .then(result => {
-          if (callback) callback.call({ 
-            lastID: result.rows[0]?.id || result.insertId,
-            changes: result.rowCount 
-          }, null);
-          return result;
-        })
-        .catch(err => {
-          console.error('Database error:', err);
-          if (callback) callback.call({ lastID: null, changes: 0 }, err);
-          throw err;
-        });
+      // Handle ALTER TABLE ADD COLUMN errors gracefully
+      if (pgQuery.includes('ALTER TABLE') && pgQuery.includes('ADD COLUMN')) {
+        pool.query(pgQuery, params)
+          .then(result => {
+            if (callback) callback.call({ 
+              lastID: result.rows && result.rows[0] ? result.rows[0].id : null,
+              changes: result.rowCount || 0
+            }, null);
+          })
+          .catch(err => {
+            // Ignore column already exists errors
+            if (err.code === '42701' || err.message.includes('already exists')) {
+              if (callback) callback.call({ lastID: null, changes: 0 }, null);
+            } else {
+              console.error('Database error:', err);
+              if (callback) callback.call({ lastID: null, changes: 0 }, err);
+            }
+          });
+      } else {
+        pool.query(pgQuery, params)
+          .then(result => {
+            if (callback) callback.call({ 
+              lastID: result.rows && result.rows[0] ? result.rows[0].id : null,
+              changes: result.rowCount || 0
+            }, null);
+          })
+          .catch(err => {
+            console.error('Database error:', err);
+            if (callback) callback.call({ lastID: null, changes: 0 }, err);
+          });
+      }
     },
     get: (query, params = [], callback) => {
       let pgQuery = query;
       let paramIndex = 1;
       pgQuery = pgQuery.replace(/\?/g, () => `$${paramIndex++}`);
       
-      return pool.query(pgQuery, params)
-        .then(result => {
-          if (callback) callback(null, result.rows[0] || null);
-          return result.rows[0] || null;
-        })
+      pool.query(pgQuery, params)
+        .then(result => callback(null, result.rows[0] || null))
         .catch(err => {
           console.error('Database error:', err);
-          if (callback) callback(err, null);
-          throw err;
+          callback(err, null);
         });
     },
     all: (query, params = [], callback) => {
@@ -70,15 +83,11 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgQuery = pgQuery.replace(/\?/g, () => `$${paramIndex++}`);
       
-      return pool.query(pgQuery, params)
-        .then(result => {
-          if (callback) callback(null, result.rows || []);
-          return result.rows || [];
-        })
+      pool.query(pgQuery, params)
+        .then(result => callback(null, result.rows || []))
         .catch(err => {
           console.error('Database error:', err);
-          if (callback) callback(err, []);
-          throw err;
+          callback(err, []);
         });
     }
   };
@@ -237,7 +246,12 @@ db.serialize(() => {
   descriptionColumns.forEach((column) => {
     db.run(
       `ALTER TABLE projects ADD COLUMN ${column} TEXT`,
-      (err) => {} // Ignore "duplicate column" errors
+      (err) => {
+        // Ignore "duplicate column" errors - this is expected behavior
+        if (err && !err.message.includes('duplicate') && err.code !== '42701') {
+          console.error(`Error adding column ${column}:`, err);
+        }
+      }
     );
   });
 });
