@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Projects Section</title>
+  <style>
+    :root{
+      --accent:#4f46e5;
+      --accent-2:#6d28d9;
+      --bg:#f4f4ff;
+      --card:#ffffff;
+      --muted:#6b7280;
+    }
+   
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4ff;
+    }
+   
+    .main {
+      padding: 20px;
+      background: #f4f4ff;
+      min-height: 100vh;
+    }
+
+    /* Navigation */
+    .nav-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .nav-header h1 {
+      margin: 0;
+      color: #333;
+    }
+
+    .back-btn {
+      padding: 8px 16px;
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #374151;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    /* Project card*/
+    .project {
+      background: white;
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .project:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+   
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+   
+    .project-header h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+    }
+   
+    .desc-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      background: #4f46e5;
+      color: white;
+      cursor: pointer;
+      font-size: 0.85rem;
+      margin-left: 5px;
+      transition: background 0.2s;
+    }
+   
+    .desc-btn:hover {
+      background: #4338ca;
+    }
+
+    /* Colleagues */
+    .colleagues {
+      margin-top: 15px;
+      padding-left: 10px;
+      background: rgba(79, 70, 229, 0.05);
+      border-radius: 8px;
+      padding: 15px;
+    }
+   
+    #colleaguesInputs, #editColleaguesInputs {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .colleagues p {
+      display: grid;
+      grid-template-columns: 200px auto;
+      align-items: center;
+      margin: 5px 0;
+      font-size: 1.2rem;
+      color: #444;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .colleagues p:hover {
+      background: rgba(79, 70, 229, 0.1);
+    }
+
+    .email-icon {
+      width: 24px;
+      height: 24px;
+      vertical-align: middle;
+    }
+
+    /* Add project button */
+    #addProjectBtn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #4f46e5, #6d28d9);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 15px;
+      transition: transform 0.2s;
+    }
+   
+    #addProjectBtn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Search bar */
+    #searchBar {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+    }
+   
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 400px;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+   
+    .modal-content h3 {
+      margin-top: 0;
+      color: #333;
+    }
+   
+    .modal-content input, .modal-content textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+   
+    .modal-content button {
+      margin-top: 10px;
+      margin-right: 10px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      background: #4f46e5;
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+    }
+   
+    .modal-content button:hover {
+      background: #4338ca;
+    }
+
+    .modal-content button.cancel {
+      background: #ccc;
+      color: black;
+    }
+
+    .modal-content button.cancel:hover {
+      background: #bbb;
+    }
+
+    .loading {
+      text-align: center;
+      color: #6b7280;
+      font-style: italic;
+      padding: 20px;
+    }
+
+    .error {
+      text-align: center;
+      color: #ef4444;
+      padding: 20px;
+      background: #fef2f2;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #6b7280;
+      font-style: italic;
+      padding: 40px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .colleague-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .colleague-row input {
+      margin: 0;
+    }
+
+    .remove-colleague {
+      background: #ef4444 !important;
+      padding: 5px 8px !important;
+      font-size: 0.8rem;
+    }
+
+    .remove-colleague:hover {
+      background: #dc2626 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="main">
+    <div class="nav-header">
+      <h1>Projects Management</h1>
+      <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+    </div>
+
+    <!-- Projects View -->
+    <div id="projectsView">
+      <input type="text" id="searchBar" placeholder="🔍 Search projects..." />
+      <button id="addProjectBtn">+ Add Project</button>
+      
+      <div id="loadingProjects" class="loading" style="display: none;">
+        Loading projects...
+      </div>
+      
+      <div id="errorProjects" class="error" style="display: none;">
+        Failed to load projects. Please try again.
+      </div>
+      
+      <div id="projectsContainer"></div>
+    </div>
+  </div>
+
+  <!-- Modal for adding project -->
+  <div class="modal" id="projectModal">
+    <div class="modal-content">
+      <h3>Add New Project</h3>
+      <input id="projectName" type="text" placeholder="Project Name" required />
+      <h4>Team Members</h4>
+      <div id="colleaguesInputs">
+        <div class="colleague-row">
+          <input placeholder="Colleague Name" class="colName" />
+          <input placeholder="Colleague Email" class="colEmail" type="email" />
+        </div>
+      </div>
+      <button id="addColleagueBtn">+ Add Team Member</button>
+      <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+        <button id="saveProjectBtn">Save Project</button>
+        <button id="closeModalBtn" class="cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for editing project -->
+  <div class="modal" id="editProjectModal">
+    <div class="modal-content">
+      <h3>Edit Project</h3>
+      <input id="editProjectName" type="text" placeholder="Project Name" />
+      <h4>Team Members</h4>
+      <div id="editColleaguesInputs"></div>
+      <button id="editAddColleagueBtn">+ Add Team Member</button>
+      <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+        <button id="updateProjectBtn">Update Project</button>
+        <button id="deleteProjectBtn" style="background: #ef4444;">Delete Project</button>
+        <button id="closeEditModalBtn" class="cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colleague Meetings Modal -->
+  <div class="modal" id="meetingsModal">
+    <div class="modal-content" style="width:500px; max-width: 90vw;">
+      <h3>Meeting Timeline</h3>
+      <div id="meetingsList" style="max-height:300px; overflow-y:auto; margin-bottom:10px;"></div>
+      <h4>Add New Meeting</h4>
+      <input type="date" id="meetingDate" />
+      <textarea id="meetingDesc" placeholder="Meeting discussion, agenda, or notes..." rows="3"></textarea>
+      <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+        <button id="addMeetingBtn">Add Meeting</button>
+        <button id="closeMeetingsModalBtn" class="cancel">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // API Configuration
+  const API_BASE = window.location.origin;
+
+  // Authentication check
+  function getCurrentUser() {
+    return sessionStorage.getItem('userEmail');
+  }
+
+  function isUserLoggedIn() {
+    return sessionStorage.getItem('isLoggedIn') === 'true';
+  }
+
+  function redirectToLogin() {
+    alert('Please log in to access this page');
+    window.location.href = '/';
+  }
+
+  // Check authentication
+  if (!isUserLoggedIn()) {
+    redirectToLogin();
+  }
+
+  const userEmail = getCurrentUser();
+  if (!userEmail) {
+    redirectToLogin();
+  }
+
+  // Initialize variables
+  let projects = [];
+  const container = document.getElementById("projectsContainer");
+  const modal = document.getElementById("projectModal");
+  const addProjectBtn = document.getElementById("addProjectBtn");
+  const closeModalBtn = document.getElementById("closeModalBtn");
+  const saveProjectBtn = document.getElementById("saveProjectBtn");
+  const addColleagueBtn = document.getElementById("addColleagueBtn");
+  const colleaguesInputsDiv = document.getElementById("colleaguesInputs");
+  const searchBar = document.getElementById("searchBar");
+  const loadingEl = document.getElementById("loadingProjects");
+  const errorEl = document.getElementById("errorProjects");
+
+  // API helper function
+  async function apiCall(endpoint, options = {}) {
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers
+        },
+        ...options
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  }
+
+  // Project modal handlers
+  addProjectBtn.onclick = () => {
+    document.getElementById("projectName").value = "";
+    resetColleagueInputs();
+    modal.style.display = "flex";
+  };
+  
+  closeModalBtn.onclick = () => modal.style.display = "none";
+
+  function resetColleagueInputs() {
+    colleaguesInputsDiv.innerHTML = `
+      <div class="colleague-row">
+        <input placeholder="Colleague Name" class="colName" />
+        <input placeholder="Colleague Email" class="colEmail" type="email" />
+      </div>
+    `;
+  }
+
+  addColleagueBtn.onclick = () => {
+    const current = colleaguesInputsDiv.querySelectorAll(".colleague-row").length;
+    if(current < 10){
+      const newRow = document.createElement('div');
+      newRow.className = 'colleague-row';
+      newRow.innerHTML = `
+        <input placeholder="Colleague Name" class="colName" />
+        <input placeholder="Colleague Email" class="colEmail" type="email" />
+        <button type="button" class="remove-colleague" onclick="this.parentElement.remove()">Remove</button>
+      `;
+      colleaguesInputsDiv.appendChild(newRow);
+    } else {
+      alert("Maximum 10 colleagues allowed");
+    }
+  }
+
+  function renderProjects(filter="") {
+    if (projects.length === 0) {
+      container.innerHTML = '<div class="empty-state">No projects found. Create your first project!</div>';
+      return;
+    }
+
+    const filteredProjects = projects.filter(p => 
+      p.name.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    if (filteredProjects.length === 0 && filter) {
+      container.innerHTML = '<div class="empty-state">No projects match your search.</div>';
+      return;
+    }
+
+    container.innerHTML = "";
+    filteredProjects.forEach((p) => {
+      const div = document.createElement("div");
+      div.className = "project";
+      
+      // Parse colleagues from the project data
+      let colleagues = [];
+      try {
+        if (p.colleagues && typeof p.colleagues === 'string') {
+          colleagues = JSON.parse(p.colleagues);
+        } else if (Array.isArray(p.colleagues)) {
+          colleagues = p.colleagues;
+        }
+      } catch (e) {
+        console.warn('Failed to parse colleagues for project:', p.id);
+        colleagues = [];
+      }
+
+      div.innerHTML = `
+        <div class="project-header">
+          <h3>${p.name}</h3>
+          <div>
+            <button class="desc-btn" onclick="window.location.href='description.html?id=${p.id}'">Description</button>
+            <button class="desc-btn edit-btn" data-id="${p.id}" style="background:#16a34a;">Edit</button>
+          </div>
+        </div>
+      `;
+
+      // Expand/collapse colleagues on project click
+      div.onclick = (e) => {
+        if(e.target.tagName === "BUTTON") return;
+        const existing = div.querySelector(".colleagues");
+        if(existing){
+          existing.remove();
+        } else {
+          const colDiv = document.createElement("div");
+          colDiv.className = "colleagues";
+          
+          if (colleagues.length === 0) {
+            colDiv.innerHTML = '<p style="color: #6b7280; font-style: italic;">No team members added yet</p>';
+          } else {
+            colleagues.forEach(c => {
+              colDiv.innerHTML += `
+                <p>
+                  <strong>${c.name}</strong>
+                  <a href="mailto:${c.email}" target="_blank" title="Send email to ${c.name}">
+                    <img src="https://www.gstatic.com/images/icons/material/product/2x/gmail_48dp.png"
+                         alt="Gmail" class="email-icon">
+                  </a>
+                </p>`;
+            });
+          }
+          div.appendChild(colDiv);
+        }
+      };
+
+      container.appendChild(div);
+    });
+
+    // Attach edit handlers
+    document.querySelectorAll(".edit-btn").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const id = e.target.dataset.id;
+        openEditModal(id);
+      });
+    });
+  }
+
+  async function loadProjects() {
+    loadingEl.style.display = 'block';
+    errorEl.style.display = 'none';
+    container.innerHTML = '';
+
+    try {
+      const data = await apiCall(`/projects/${encodeURIComponent(userEmail)}`);
+      projects = data;
+      renderProjects();
+    } catch (error) {
+      console.error("Failed to load projects:", error);
+      errorEl.style.display = 'block';
+      projects = [];
+    } finally {
+      loadingEl.style.display = 'none';
+    }
+  }
+ 
+  // Load projects on page load
+  loadProjects();
+
+  saveProjectBtn.onclick = async () => {
+    const projectName = document.getElementById("projectName").value.trim();
+    if(!projectName) {
+      alert("Project name is required");
+      return;
+    }
+
+    const colleagueRows = document.querySelectorAll("#colleaguesInputs .colleague-row");
+    const colleagues = [];
+    
+    colleagueRows.forEach(row => {
+      const name = row.querySelector(".colName").value.trim();
+      const email = row.querySelector(".colEmail").value.trim();
+      
+      if(name && email){
+        if(!email.includes('@')) {
+          alert(`Invalid email format: ${email}`);
+          return;
+        }
+        colleagues.push({name, email});
+      }
+    });
+
+    try {
+      saveProjectBtn.textContent = 'Saving...';
+      saveProjectBtn.disabled = true;
+
+      await apiCall("/projects", {
+        method: "POST",
+        body: JSON.stringify({
+          name: projectName,
+          owner_email: userEmail,
+          colleagues: JSON.stringify(colleagues)
+        })
+      });
+
+      modal.style.display = "none";
+      loadProjects();
+      
+    } catch (error) {
+      console.error("Failed to save project:", error);
+      alert("Failed to save project. Please try again.");
+    } finally {
+      saveProjectBtn.textContent = 'Save Project';
+      saveProjectBtn.disabled = false;
+    }
+  }
+
+  // Search filter
+  searchBar.addEventListener("input", e => {
+    renderProjects(e.target.value);
+  });
+
+  // Edit project modal handling
+  const editModal = document.getElementById("editProjectModal");
+  const editProjectName = document.getElementById("editProjectName");
+  const editColleaguesInputs = document.getElementById("editColleaguesInputs");
+  const editAddColleagueBtn = document.getElementById("editAddColleagueBtn");
+  const updateProjectBtn = document.getElementById("updateProjectBtn");
+  const deleteProjectBtn = document.getElementById("deleteProjectBtn");
+  const closeEditModalBtn = document.getElementById("closeEditModalBtn");
+
+  let editingProjectId = null;
+
+  async function openEditModal(projectId) {
+    const project = projects.find(pr => pr.id == projectId);
+    if (!project) return;
+    
+    editingProjectId = project.id;
+    editProjectName.value = project.name;
+    
+    // Parse colleagues
+    let colleagues = [];
+    try {
+      if (project.colleagues && typeof project.colleagues === 'string') {
+        colleagues = JSON.parse(project.colleagues);
+      } else if (Array.isArray(project.colleagues)) {
+        colleagues = project.colleagues;
+      }
+    } catch (e) {
+      colleagues = [];
+    }
+
+    editColleaguesInputs.innerHTML = "";
+    
+    if (colleagues.length === 0) {
+      editColleaguesInputs.innerHTML = `
+        <div class="colleague-row">
+          <input placeholder="Colleague Name" class="editColName" />
+          <input placeholder="Colleague Email" class="editColEmail" type="email" />
+        </div>
+      `;
+    } else {
+      colleagues.forEach((c, i) => {
+        const row = document.createElement('div');
+        row.className = 'colleague-row';
+        row.innerHTML = `
+          <input placeholder="Colleague Name" class="editColName" value="${c.name}" />
+          <input placeholder="Colleague Email" class="editColEmail" value="${c.email}" type="email" />
+          ${i > 0 ? '<button type="button" class="remove-colleague" onclick="this.parentElement.remove()">Remove</button>' : ''}
+        `;
+        editColleaguesInputs.appendChild(row);
+      });
+    }
+
+    editModal.style.display = "flex";
+  }
+
+  closeEditModalBtn.onclick = () => editModal.style.display = "none";
+
+  editAddColleagueBtn.onclick = () => {
+    const count = editColleaguesInputs.querySelectorAll(".colleague-row").length;
+    if(count < 10){
+      const newRow = document.createElement('div');
+      newRow.className = 'colleague-row';
+      newRow.innerHTML = `
+        <input placeholder="Colleague Name" class="editColName" />
+        <input placeholder="Colleague Email" class="editColEmail" type="email" />
+        <button type="button" class="remove-colleague" onclick="this.parentElement.remove()">Remove</button>
+      `;
+      editColleaguesInputs.appendChild(newRow);
+    } else {
+      alert("Maximum 10 colleagues allowed");
+    }
+  };
+
+  updateProjectBtn.onclick = async () => {
+    const name = editProjectName.value.trim();
+    if(!name) {
+      alert("Project name is required");
+      return;
+    }
+
+    const colleagueRows = document.querySelectorAll("#editColleaguesInputs .colleague-row");
+    const colleagues = [];
+
+    colleagueRows.forEach(row => {
+      const name = row.querySelector(".editColName").value.trim();
+      const email = row.querySelector(".editColEmail").value.trim();
+      
+      if(name && email){
+        if(!email.includes('@')) {
+          alert(`Invalid email format: ${email}`);
+          return;
+        }
+        colleagues.push({name, email});
+      }
+    });
+
+    try {
+      updateProjectBtn.textContent = 'Updating...';
+      updateProjectBtn.disabled = true;
+
+      // Note: You'll need to add a PUT endpoint for projects in your server.js
+      await apiCall(`/projects/${editingProjectId}`, {
+        method: "PUT",
+        body: JSON.stringify({ 
+          name, 
+          colleagues: JSON.stringify(colleagues) 
+        })
+      });
+
+      editModal.style.display = "none";
+      loadProjects();
+      
+    } catch (error) {
+      console.error("Failed to update project:", error);
+      alert("Failed to update project. Please try again.");
+    } finally {
+      updateProjectBtn.textContent = 'Update Project';
+      updateProjectBtn.disabled = false;
+    }
+  };
+
+  deleteProjectBtn.onclick = async () => {
+    if(!confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      deleteProjectBtn.textContent = 'Deleting...';
+      deleteProjectBtn.disabled = true;
+
+      await apiCall(`/projects/${editingProjectId}`, {
+        method: "DELETE"
+      });
+
+      editModal.style.display = "none";
+      loadProjects();
+      
+    } catch (error) {
+      console.error("Failed to delete project:", error);
+      alert("Failed to delete project. Please try again.");
+    } finally {
+      deleteProjectBtn.textContent = 'Delete Project';
+      deleteProjectBtn.disabled = false;
+    }
+  };
+
+  // Meetings modal
+  const meetingsModal = document.getElementById("meetingsModal");
+  const meetingsList = document.getElementById("meetingsList");
+  const meetingDate = document.getElementById("meetingDate");
+  const meetingDesc = document.getElementById("meetingDesc");
+  const addMeetingBtn = document.getElementById("addMeetingBtn");
+  const closeMeetingsModalBtn = document.getElementById("closeMeetingsModalBtn");
+
+  let currentColleagueEmail = null;
+
+  document.addEventListener("click", e => {
+    if(e.target.tagName === "STRONG" && e.target.closest('.colleagues')) {
+      const name = e.target.textContent;
+      const colP = e.target.closest("p");
+      const emailLink = colP.querySelector("a");
+      if (emailLink) {
+        const email = emailLink.href.replace("mailto:", "");
+        currentColleagueEmail = email;
+        meetingsModal.style.display = "flex";
+        loadMeetings(email, name);
+      }
+    }
+  });
+
+  closeMeetingsModalBtn.onclick = () => meetingsModal.style.display = "none";
+
+  async function loadMeetings(email, name) {
+    try {
+      const meetings = await apiCall(`/meetings/${encodeURIComponent(email)}`);
+      
+      if (meetings.length === 0) {
+        meetingsList.innerHTML = `<p style="color: #6b7280; font-style: italic;">No meetings recorded with ${name} yet.</p>`;
+      } else {
+        meetingsList.innerHTML = meetings
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .map(m => `
+            <div style="padding: 10px; border-bottom: 1px solid #eee; margin-bottom: 8px;">
+              <strong>${new Date(m.date).toLocaleDateString()}</strong>
+              <p style="margin: 5px 0 0 0; color: #444;">${m.description}</p>
+            </div>
+          `).join("");
+      }
+    } catch (error) {
+      console.error("Failed to load meetings:", error);
+      meetingsList.innerHTML = `<p style="color: #ef4444;">Error loading meetings. Please try again.</p>`;
+    }
+  }
+
+  addMeetingBtn.onclick = async () => {
+    const date = meetingDate.value;
+    const desc = meetingDesc.value.trim();
+    
+    if(!date || !desc) {
+      alert("Date and description are required");
+      return;
+    }
+
+    try {
+      addMeetingBtn.textContent = 'Adding...';
+      addMeetingBtn.disabled = true;
+
+      await apiCall("/meetings", {
+        method: "POST",
+        body: JSON.stringify({
+          colleague_email: currentColleagueEmail,
+          date,
+          description: desc
+        })
+      });
+
+      meetingDate.value = "";
+      meetingDesc.value = "";
+      loadMeetings(currentColleagueEmail);
+      
+    } catch (error) {
+      console.error("Failed to save meeting:", error);
+      alert("Failed to save meeting. Please try again.");
+    } finally {
+      addMeetingBtn.textContent = 'Add Meeting';
+      addMeetingBtn.disabled = false;
+    }
+  };
+
+  // Modal click outside to close
+  document.querySelectorAll(".modal").forEach(m => {
+    m.addEventListener("click", (e) => {
+      if(e.target === m) m.style.display = "none";
+    });
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") {
+      document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+    }
+  });
+  </script>
+</body>
+</html>

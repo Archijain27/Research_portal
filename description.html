@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project Description</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f4ff;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #4f46e5;
+      margin-bottom: 25px;
+      font-size: 2rem;
+      text-align: center;
+    }
+    h2 {
+      color: #1f2937;
+      margin-top: 25px;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #e0e7ff;
+      padding-bottom: 5px;
+      font-size: 1.2rem;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin: 8px 0 4px;
+      color: #374151;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    textarea { 
+      min-height: 80px; 
+      resize: vertical; 
+      font-family: inherit;
+    }
+    .row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .col {
+      flex: 1 1 45%;
+    }
+    .full-width { 
+      flex: 1 1 100%; 
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 22px;
+      border: none;
+      border-radius: 8px;
+      background: #4f46e5;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1rem;
+      transition: background-color 0.2s;
+    }
+    button:hover { 
+      background: #4338ca; 
+    }
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    .back-btn {
+      background: #6b7280;
+      margin-right: 10px;
+    }
+    .back-btn:hover {
+      background: #4b5563;
+    }
+    .loading {
+      text-align: center;
+      color: #6b7280;
+      font-style: italic;
+      padding: 20px;
+    }
+    .error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+    .success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #16a34a;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+    .nav-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .project-info {
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #4f46e5;
+    }
+    .last-saved {
+      font-size: 0.9rem;
+      color: #6b7280;
+      text-align: right;
+      margin-top: 10px;
+    }
+    @media (max-width: 768px) {
+      .row {
+        flex-direction: column;
+      }
+      .col {
+        flex: 1 1 100%;
+      }
+      .container {
+        padding: 20px;
+        margin: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav-header">
+      <h1 id="projTitle">Project Description</h1>
+      <a href="projects.html" class="back-btn" style="text-decoration: none;">← Back to Projects</a>
+    </div>
+
+    <div id="loadingMessage" class="loading" style="display: none;">
+      Loading project description...
+    </div>
+
+    <div id="errorMessage" class="error" style="display: none;"></div>
+
+    <div id="successMessage" class="success" style="display: none;"></div>
+
+    <div class="project-info">
+      <h3 style="margin: 0 0 10px 0; color: #4f46e5;">Project Information</h3>
+      <p id="projectInfoText" style="margin: 0; color: #6b7280;">Loading project details...</p>
+    </div>
+
+    <form id="descriptionForm">
+      <h2>Project Overview</h2>
+      <div class="row">
+        <div class="col">
+          <label for="projectTitle">Project Title</label>
+          <input id="projectTitle" type="text" placeholder="Enter project title">
+        </div>
+        <div class="col">
+          <label for="notes">Initial Notes</label>
+          <textarea id="notes" placeholder="Project overview and initial thoughts..."></textarea>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <h2>Colleague/Client Contact Information</h2>
+          <label for="colleagueName">Contact Name & Title</label>
+          <input id="colleagueName" type="text" placeholder="Full name and title">
+          <label for="colleaguePhone">Phone Number</label>
+          <input id="colleaguePhone" type="tel" placeholder="Phone number">
+          <label for="colleagueEmail">Email Address</label>
+          <input id="colleagueEmail" type="email" placeholder="Email address">
+          <label for="colleagueAddress1">Mailing Address Line 1</label>
+          <input id="colleagueAddress1" type="text" placeholder="Street address">
+          <label for="colleagueAddress2">Mailing Address Line 2</label>
+          <input id="colleagueAddress2" type="text" placeholder="Apartment, suite, etc.">
+          <label for="colleagueAddress3">City, State, ZIP</label>
+          <input id="colleagueAddress3" type="text" placeholder="City, State, ZIP">
+        </div>
+        <div class="col">
+          <h2>Your Contact Information</h2>
+          <label for="yourName">Your Name & Title</label>
+          <input id="yourName" type="text" placeholder="Your full name and title">
+          <label for="yourPhone">Phone Number</label>
+          <input id="yourPhone" type="tel" placeholder="Your phone number">
+          <label for="yourEmail">Email Address</label>
+          <input id="yourEmail" type="email" placeholder="Your email address">
+          <label for="yourAddress1">Mailing Address Line 1</label>
+          <input id="yourAddress1" type="text" placeholder="Street address">
+          <label for="yourAddress2">Mailing Address Line 2</label>
+          <input id="yourAddress2" type="text" placeholder="Apartment, suite, etc.">
+          <label for="yourAddress3">City, State, ZIP</label>
+          <input id="yourAddress3" type="text" placeholder="City, State, ZIP">
+        </div>
+      </div>
+
+      <h2>Project Objectives</h2>
+      <textarea id="objectives" class="full-width" placeholder="What are the main goals and objectives of this project?"></textarea>
+
+      <div class="row">
+        <div class="col">
+          <h2>Timeline & Milestones</h2>
+          <textarea id="timeline" placeholder="Project timeline, key milestones, and deadlines..."></textarea>
+        </div>
+        <div class="col">
+          <h2>Target Audience</h2>
+          <label for="primaryAudience">Primary Demographic</label>
+          <input id="primaryAudience" type="text" placeholder="Primary target audience">
+          <label for="secondaryAudience">Secondary Demographic</label>
+          <input id="secondaryAudience" type="text" placeholder="Secondary target audience">
+        </div>
+      </div>
+
+      <h2>Call To Action</h2>
+      <textarea id="callAction" class="full-width" placeholder="What action do you want the audience to take?"></textarea>
+
+      <h2>Competitive Analysis</h2>
+      <textarea id="competition" class="full-width" placeholder="Analysis of competitors, market positioning, differentiators..."></textarea>
+
+      <h2>Visual & Media Requirements</h2>
+      <div class="row">
+        <div class="col">
+          <label for="graphics">Graphics & Design</label>
+          <textarea id="graphics" placeholder="Logo, branding, design requirements..."></textarea>
+        </div>
+        <div class="col">
+          <label for="photography">Photography</label>
+          <textarea id="photography" placeholder="Photo requirements, style, subjects..."></textarea>
+        </div>
+      </div>
+      <label for="multimedia">Multimedia & Interactive Elements</label>
+      <textarea id="multimedia" placeholder="Videos, animations, interactive features..."></textarea>
+
+      <h2>Additional Information</h2>
+      <textarea id="otherInfo" class="full-width" placeholder="Any other relevant information, special requirements, constraints..."></textarea>
+
+      <h2>Review & Approval</h2>
+      <div class="row">
+        <div class="col">
+          <label for="clientName">Reviewer Name & Title</label>
+          <input id="clientName" type="text" placeholder="Name of person reviewing/approving">
+        </div>
+        <div class="col">
+          <label for="approvalDate">Review Date</label>
+          <input id="approvalDate" type="date">
+        </div>
+      </div>
+      <label for="clientComments">Review Comments</label>
+      <textarea id="clientComments" placeholder="Feedback, suggestions, approval notes..."></textarea>
+      <label for="approvalSignature">Digital Signature</label>
+      <input id="approvalSignature" type="text" placeholder="Type name for digital signature">
+
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+        <button type="button" class="back-btn" onclick="window.location.href='projects.html'">← Back to Projects</button>
+        <button type="submit" id="saveBtn">Save Description</button>
+        <button type="button" id="autoSaveBtn" style="background: #059669;">Enable Auto-Save</button>
+      </div>
+    </form>
+
+    <div class="last-saved" id="lastSaved"></div>
+  </div>
+
+  <script>
+    // API Configuration
+    const API_BASE = window.location.origin;
+    
+    // Authentication check
+    function getCurrentUser() {
+      return sessionStorage.getItem('userEmail');
+    }
+
+    function isUserLoggedIn() {
+      return sessionStorage.getItem('isLoggedIn') === 'true';
+    }
+
+    function redirectToLogin() {
+      alert('Please log in to access this page');
+      window.location.href = '/';
+    }
+
+    // Check authentication
+    if (!isUserLoggedIn()) {
+      redirectToLogin();
+    }
+
+    const userEmail = getCurrentUser();
+    if (!userEmail) {
+      redirectToLogin();
+    }
+
+    // Get project ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get("id");
+
+    // Form fields mapping
+    const fields = [
+      "projectTitle", "notes", "colleagueName", "colleaguePhone", "colleagueEmail", 
+      "colleagueAddress1", "colleagueAddress2", "colleagueAddress3", "yourName", 
+      "yourPhone", "yourEmail", "yourAddress1", "yourAddress2", "yourAddress3", 
+      "objectives", "timeline", "primaryAudience", "secondaryAudience", "callAction", 
+      "competition", "graphics", "photography", "multimedia", "otherInfo", 
+      "clientName", "clientComments", "approvalDate", "approvalSignature"
+    ];
+
+    // UI elements
+    const loadingMessage = document.getElementById("loadingMessage");
+    const errorMessage = document.getElementById("errorMessage");
+    const successMessage = document.getElementById("successMessage");
+    const saveBtn = document.getElementById("saveBtn");
+    const autoSaveBtn = document.getElementById("autoSaveBtn");
+    const lastSaved = document.getElementById("lastSaved");
+    const form = document.getElementById("descriptionForm");
+
+    let autoSaveEnabled = false;
+    let autoSaveInterval = null;
+    let hasUnsavedChanges = false;
+
+    // Validation
+    if (!projectId) {
+      showError("No project selected. Redirecting to Projects page.");
+      setTimeout(() => window.location.href = "projects.html", 2000);
+    }
+
+    // API helper function
+    async function apiCall(endpoint, options = {}) {
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+          },
+          ...options
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+      }
+    }
+
+    // UI helper functions
+    function showLoading(show = true) {
+      loadingMessage.style.display = show ? 'block' : 'none';
+      form.style.display = show ? 'none' : 'block';
+    }
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+      setTimeout(() => {
+        errorMessage.style.display = 'none';
+      }, 5000);
+    }
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+      setTimeout(() => {
+        successMessage.style.display = 'none';
+      }, 3000);
+    }
+
+    function updateLastSaved() {
+      const now = new Date();
+      lastSaved.textContent = `Last saved: ${now.toLocaleString()}`;
+      hasUnsavedChanges = false;
+    }
+
+    // Load project info and description
+    async function loadProjectData() {
+      showLoading(true);
+      
+      try {
+        // Load basic project info
+        const projects = await apiCall(`/projects/${encodeURIComponent(userEmail)}`);
+        const project = projects.find(p => p.id == projectId);
+        
+        if (!project) {
+          throw new Error("Project not found");
+        }
+
+        // Update UI with project info
+        document.getElementById("projTitle").textContent = `${project.name} - Description`;
+        document.getElementById("projectInfoText").innerHTML = 
+          `<strong>${project.name}</strong><br>Owner: ${project.owner_email}`;
+
+        // Pre-fill user email
+        document.getElementById("yourEmail").value = userEmail;
+
+        // Load description data
+        const description = await apiCall(`/projects/${projectId}/description`);
+        
+        if (description) {
+          fields.forEach(field => {
+            const element = document.getElementById(field);
+            if (element && description[field]) {
+              element.value = description[field];
+            }
+          });
+          updateLastSaved();
+        }
+
+      } catch (error) {
+        console.error("Failed to load project data:", error);
+        showError("Failed to load project data. Please try refreshing the page.");
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Save description
+    async function saveDescription() {
+      const formData = {};
+      let hasRequiredFields = false;
+
+      fields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element) {
+          const value = element.value.trim();
+          formData[field] = value;
+          if (value) hasRequiredFields = true;
+        }
+      });
+
+      if (!hasRequiredFields) {
+        showError("Please fill in at least one field before saving.");
+        return;
+      }
+
+      try {
+        saveBtn.textContent = 'Saving...';
+        saveBtn.disabled = true;
+
+        await apiCall(`/projects/${projectId}/description`, {
+          method: "PUT",
+          body: JSON.stringify(formData)
+        });
+
+        showSuccess("Project description saved successfully!");
+        updateLastSaved();
+        
+      } catch (error) {
+        console.error("Failed to save description:", error);
+        showError("Failed to save description. Please try again.");
+      } finally {
+        saveBtn.textContent = 'Save Description';
+        saveBtn.disabled = false;
+      }
+    }
+
+    // Auto-save functionality
+    function toggleAutoSave() {
+      autoSaveEnabled = !autoSaveEnabled;
+      
+      if (autoSaveEnabled) {
+        autoSaveBtn.textContent = 'Auto-Save ON';
+        autoSaveBtn.style.background = '#dc2626';
+        autoSaveInterval = setInterval(() => {
+          if (hasUnsavedChanges) {
+            saveDescription();
+          }
+        }, 30000); // Auto-save every 30 seconds
+        showSuccess("Auto-save enabled! Changes will be saved automatically every 30 seconds.");
+      } else {
+        autoSaveBtn.textContent = 'Enable Auto-Save';
+        autoSaveBtn.style.background = '#059669';
+        if (autoSaveInterval) {
+          clearInterval(autoSaveInterval);
+          autoSaveInterval = null;
+        }
+        showSuccess("Auto-save disabled.");
+      }
+    }
+
+    // Track changes
+    function trackChanges() {
+      hasUnsavedChanges = true;
+    }
+
+    // Event listeners
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      saveDescription();
+    });
+
+    autoSaveBtn.addEventListener('click', toggleAutoSave);
+
+    // Track changes on all form inputs
+    fields.forEach(field => {
+      const element = document.getElementById(field);
+      if (element) {
+        element.addEventListener('input', trackChanges);
+        element.addEventListener('change', trackChanges);
+      }
+    });
+
+    // Warn about unsaved changes
+    window.addEventListener('beforeunload', (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+        return 'You have unsaved changes. Are you sure you want to leave?';
+      }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveDescription();
+      }
+    });
+
+    // Initialize
+    loadProjectData();
+  </script>
+</body>
+</html>

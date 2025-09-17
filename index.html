@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Research Portal Auth</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      height: 100vh; 
+      background: linear-gradient(135deg, #e0eaff, #f4f0ff);
+      margin: 0;
+    }
+    .card { 
+      background: white; 
+      padding: 2rem; 
+      border-radius: 12px; 
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      width: 300px; 
+      text-align: center; 
+    }
+    input { 
+      width: 100%; 
+      padding: 10px; 
+      margin: 8px 0; 
+      border: 1px solid #ccc; 
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+    button { 
+      width: 100%; 
+      padding: 10px; 
+      margin-top: 10px; 
+      border: none; 
+      border-radius: 8px;
+      background: #4f46e5; 
+      color: white; 
+      font-weight: bold; 
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover { 
+      background: #4338ca; 
+    }
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    .toggle { 
+      margin-top: 10px; 
+      color: #4f46e5; 
+      cursor: pointer; 
+      font-size: 0.9em;
+      text-decoration: underline;
+    }
+    .toggle:hover {
+      color: #4338ca;
+    }
+    #msg { 
+      margin-top: 12px; 
+      font-size: 0.9em;
+      min-height: 20px;
+    }
+    .loading {
+      display: none;
+      margin-top: 10px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="formTitle">Sign Up</h2>
+    <input id="email" type="email" placeholder="Email" required />
+    <input id="password" type="password" placeholder="Password" required />
+    <button id="submitBtn">Sign Up</button>
+    <div class="loading" id="loading">Processing...</div>
+    <div id="msg"></div>
+    <p class="toggle" onclick="toggleForm()">Already have an account? Login</p>
+  </div>
+
+  <script>
+    let isLogin = false;
+    // 🔹 Use relative URLs for deployment - this will work both locally and on deployed server
+    const API_BASE = window.location.origin;
+    
+    const formTitle = document.getElementById("formTitle");
+    const submitBtn = document.getElementById("submitBtn");
+    const msg = document.getElementById("msg");
+    const loading = document.getElementById("loading");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+
+    // Check if user is already logged in
+    function checkExistingSession() {
+      const userEmail = sessionStorage.getItem('userEmail');
+      const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+      
+      if (userEmail && isLoggedIn === 'true') {
+        // User is already logged in, redirect to dashboard
+        window.location.href = 'dashboard.html';
+      }
+    }
+
+    // Call this when page loads
+    checkExistingSession();
+
+    function toggleForm() {
+      isLogin = !isLogin;
+      formTitle.textContent = isLogin ? "Login" : "Sign Up";
+      submitBtn.textContent = isLogin ? "Login" : "Sign Up";
+      document.querySelector('.toggle').innerHTML = isLogin 
+        ? "Don't have an account? Sign Up" 
+        : "Already have an account? Login";
+      clearMessage();
+    }
+
+    function clearMessage() {
+      msg.textContent = "";
+      msg.style.color = "";
+    }
+
+    function showLoading(show) {
+      if (show) {
+        loading.style.display = 'block';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+      } else {
+        loading.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.textContent = isLogin ? "Login" : "Sign Up";
+      }
+    }
+
+    function showMessage(message, isError = false) {
+      msg.style.color = isError ? "red" : "green";
+      msg.textContent = message;
+    }
+
+    function validateInput(email, password) {
+      if (!email || !email.includes('@')) {
+        showMessage("Please enter a valid email address", true);
+        return false;
+      }
+      if (!password || password.length < 6) {
+        showMessage("Password must be at least 6 characters long", true);
+        return false;
+      }
+      return true;
+    }
+
+    // Handle form submission
+    submitBtn.onclick = async (e) => {
+      e.preventDefault();
+      
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      
+      // Clear previous messages
+      clearMessage();
+      
+      // Validate input
+      if (!validateInput(email, password)) {
+        return;
+      }
+
+      const endpoint = isLogin ? "/login" : "/signup";
+      
+      showLoading(true);
+
+      try {
+        const response = await fetch(API_BASE + endpoint, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json" 
+          },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+
+        if (data.error) {
+          showMessage(data.error, true);
+        } else {
+          showMessage(data.message, false);
+          
+          if (isLogin) {
+            // For login, store user session
+            sessionStorage.setItem("userEmail", data.email || email);
+            sessionStorage.setItem("isLoggedIn", "true");
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+              window.location.href = "dashboard.html";
+            }, 800);
+          } else {
+            // For signup, show success message and switch to login
+            setTimeout(() => {
+              toggleForm();
+              emailInput.value = email;
+              passwordInput.value = '';
+              showMessage("Account created! Please login.", false);
+            }, 1500);
+          }
+        }
+      } catch (error) {
+        console.error('Request failed:', error);
+        showMessage("Unable to connect to server. Please try again.", true);
+      } finally {
+        showLoading(false);
+      }
+    };
+
+    // Handle Enter key press
+    document.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        submitBtn.click();
+      }
+    });
+
+    // Clear messages when user starts typing
+    emailInput.addEventListener('input', clearMessage);
+    passwordInput.addEventListener('input', clearMessage);
+  </script>
+</body>
+</html>

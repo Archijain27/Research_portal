@@ -1,0 +1,1205 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <style>
+    :root{
+      --accent:#4f46e5;
+      --accent-2:#6d28d9;
+      --bg:#f4f4ff;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --event-bg: rgba(79,70,229,0.12);
+    }
+   
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      background: var(--bg);
+    }
+   
+    .sidebar {
+      width: 220px;
+      background: linear-gradient(180deg, #4f46e5, #4338ca);
+      color: white;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 3px 0 10px rgba(0,0,0,0.15);
+    }
+
+    .sidebar h2 {
+      margin-top: 5px;
+      font-size: 1.7rem;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0;
+    }
+
+    .sidebar li {
+      margin: 12px 0;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .sidebar li:hover {
+      background: rgba(255,255,255,0.15);
+      transform: translateX(5px);
+    }
+
+    .sidebar li.active {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .sidebar li:last-child {
+      margin-top: auto;
+      background: transparent;
+      color: inherit;
+      font-weight: normal;
+    }
+
+    .main {
+      flex: 1;
+      padding: 30px;
+      background: var(--bg);
+      overflow-y: auto;
+    }
+
+    .dashboard-header {
+      margin-bottom: 30px;
+    }
+
+    .dashboard-header h1 {
+      font-size: 2.5rem;
+      color: #333;
+      margin: 0 0 10px 0;
+      font-weight: 700;
+    }
+
+    .dashboard-header p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 8px;
+      border: 1px solid rgba(79,70,229,0.1);
+    }
+
+    .user-email {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 25px;
+      max-width: 1200px;
+    }
+
+    .dashboard-tile {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid rgba(79,70,229,0.1);
+      position: relative;
+      overflow: hidden;
+      min-height: 220px;
+    }
+
+    .dashboard-tile:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    .tile-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .tile-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+    }
+
+    .tile-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .tile-content {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .tile-item {
+      background: rgba(79,70,229,0.05);
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--accent);
+      font-size: 0.95rem;
+    }
+
+    .tile-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .tile-count {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    /* Tile-specific colors */
+    .deadlines .tile-icon { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .ideas .tile-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .projects .tile-icon { background: linear-gradient(135deg, #10b981, #059669); }
+    .notes .tile-icon { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+    .career .tile-icon { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .future .tile-icon { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      font-style: italic;
+      margin-top: 20px;
+    }
+
+    .add-item-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 24px;
+      right: 24px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .loading {
+      text-align: center;
+      color: var(--muted);
+      font-style: italic;
+      margin: 20px 0;
+    }
+
+    .error {
+      color: #ef4444;
+      text-align: center;
+      font-size: 0.9rem;
+      margin: 10px 0;
+    }
+
+    /* Calendar Styles */
+    .calendar {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 6px 20px rgba(2,6,23,0.06);
+    }
+
+    .cal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:12px;
+      gap:12px;
+    }
+    .cal-nav{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .view-toggle{
+      display:flex;
+      gap:6px;
+    }
+    .view-toggle button{
+      padding:6px 10px;
+      border-radius:8px;
+      border:1px solid #eee;
+      background:#fff;
+      cursor:pointer;
+    }
+    .view-toggle button.active{
+      background:var(--accent);
+      color:white;
+      border-color:var(--accent);
+    }
+
+    .month-grid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:6px;
+    }
+    .day-cell{
+      min-height:110px;
+      border-radius:8px;
+      padding:8px;
+      background:transparent;
+      border:1px solid transparent;
+      cursor:pointer;
+    }
+    .day-cell:hover{
+      background:rgba(79,70,229,0.05);
+    }
+    .day-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      margin-bottom:6px;
+    }
+    .day-cell.outside{
+      opacity:0.4;
+    }
+    .day-number{
+      font-weight:600;
+      color:#111827;
+    }
+    .events-list{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      overflow:hidden;
+    }
+    .event-pill{
+      padding:4px 6px;
+      border-radius:6px;
+      background:var(--event-bg);
+      font-size:0.85rem;
+      color:var(--accent);
+      cursor:pointer;
+      border-left:4px solid rgba(79,70,229,0.9);
+    }
+
+    .week-grid{
+      display:grid;
+      grid-template-columns:80px 1fr;
+      gap:0;
+    }
+    .time-col{
+      border-right:1px solid #f0f0f7;
+      padding-top:20px;
+    }
+    .time-slot{
+      height:48px;
+      padding:6px;
+      font-size:0.85rem;
+      color:var(--muted);
+      border-bottom:1px dashed #f0f0f7;
+    }
+    .week-days{
+      display:grid;
+      grid-template-columns:repeat(7, 1fr);
+      min-height:600px;
+      border-left:1px solid #f0f0f7;
+    }
+    .day-column{
+      border-right:1px solid #f7f7fb;
+      padding:8px;
+      position:relative;
+      cursor:pointer;
+    }
+    .event-block{
+      position:absolute;
+      padding:6px;
+      border-radius:6px;
+      background:linear-gradient(180deg, #ecf0ff,#eef2ff);
+      border-left:4px solid var(--accent);
+      font-size:0.85rem;
+      box-shadow:0 8px 18px rgba(2,6,23,0.06);
+      cursor:pointer;
+    }
+
+    .btn{
+      border: none;
+      padding:8px 12px;
+      border-radius:8px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:white;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .btn.ghost{
+      background:transparent;
+      color:var(--accent);
+      border:1px solid rgba(79,70,229,0.15);
+    }
+    .btn:hover{
+      opacity:0.9;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-size:0.95rem;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center; align-items: center;
+      z-index: 50;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 400px;
+    }
+    .modal-content input, .modal-content textarea {
+      width: 100%; padding: 8px; margin: 5px 0; border-radius: 6px; border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .modal-content button {
+      margin-top: 10px;
+      padding: 10px; border: none; border-radius: 8px; background: #4f46e5; color: white;
+      cursor: pointer;
+    }
+    .modal-content button:hover { background: #4338ca; }
+
+    #eventModal .repeat-container {
+      margin-top: 8px;
+    }
+
+    #eventModal .repeat-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    #eventModal .repeat-option input[type="checkbox"] {
+      margin: 0;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        width: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Menu</h2>
+    <ul>
+      <li id="menu-dashboard" class="active">Dashboard</li>
+      <li id="menu-calendar">Calendar</li>
+      <li>Research Paper</li>
+      <li>Profile</li>
+      <li id="logout">Logout</li>
+    </ul>
+  </div>
+
+  <div class="main">
+    <!-- Dashboard View -->
+    <div id="dashboardView">
+      <div class="dashboard-header">
+        <div class="user-info">
+          <span>Welcome back,</span>
+          <span class="user-email" id="userEmail">Loading...</span>
+        </div>
+        <h1>Dashboard</h1>
+        <p>Stay organized and track your progress across all areas of life</p>
+      </div>
+     
+      <div class="dashboard-grid">
+        <!-- Deadlines Tile -->
+        <div class="dashboard-tile deadlines" data-tile="deadlines">
+          <div class="tile-header">
+            <div class="tile-icon">⏰</div>
+            <h3 class="tile-title">Deadlines</h3>
+          </div>
+          <div class="tile-count" id="deadlines-count">0</div>
+          <div class="tile-content" id="deadlines-content">
+            <div class="loading">Loading deadlines...</div>
+          </div>
+          <div class="add-item-hint">Click to manage deadlines</div>
+        </div>
+
+        <!-- Recent Ideas Tile -->
+        <div class="dashboard-tile ideas" data-tile="ideas">
+          <div class="tile-header">
+            <div class="tile-icon">💡</div>
+            <h3 class="tile-title">Recent Ideas</h3>
+          </div>
+          <div class="tile-count" id="ideas-count">0</div>
+          <div class="tile-content" id="ideas-content">
+            <div class="loading">Loading ideas...</div>
+          </div>
+          <div class="add-item-hint">Click to capture ideas</div>
+        </div>
+
+        <!-- Ongoing Projects Tile -->
+        <div class="dashboard-tile projects" data-tile="projects">
+          <div class="tile-header">
+            <div class="tile-icon">🚀</div>
+            <h3 class="tile-title">Your Projects</h3>
+          </div>
+          <div class="tile-count" id="projects-count">0</div>
+          <div class="tile-content" id="projects-content">
+            <div class="loading">Loading projects...</div>
+          </div>
+          <div class="add-item-hint">Click to manage projects</div>
+        </div>
+
+        <!-- Quick Notes Tile -->
+        <div class="dashboard-tile notes" data-tile="notes">
+          <div class="tile-header">
+            <div class="tile-icon">📝</div>
+            <h3 class="tile-title">Quick Notes</h3>
+          </div>
+          <div class="tile-count" id="notes-count">0</div>
+          <div class="tile-content" id="notes-content">
+            <div class="loading">Loading notes...</div>
+          </div>
+          <div class="add-item-hint">Click to take notes</div>
+        </div>
+
+        <!-- Career Progression Tile -->
+        <div class="dashboard-tile career" data-tile="career">
+          <div class="tile-header">
+            <div class="tile-icon">📈</div>
+            <h3 class="tile-title">Career & Goals</h3>
+          </div>
+          <div class="tile-count" id="career-count">0</div>
+          <div class="tile-content" id="career-content">
+            <div class="loading">Loading goals...</div>
+          </div>
+          <div class="add-item-hint">Click to set goals</div>
+        </div>
+
+        <!-- Future Work Tile -->
+        <div class="dashboard-tile future" data-tile="future">
+          <div class="tile-header">
+            <div class="tile-icon">🔮</div>
+            <h3 class="tile-title">Future Work</h3>
+          </div>
+          <div class="tile-count" id="future-count">0</div>
+          <div class="tile-content" id="future-content">
+            <div class="loading">Loading future work...</div>
+          </div>
+          <div class="add-item-hint">Click to plan future work</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar View -->
+    <div id="calendarView" style="display:none">
+      <div class="calendar">
+        <div class="cal-header">
+          <div>
+            <div style="font-size:0.95rem;color:var(--muted)">Calendar</div>
+            <div style="font-weight:700;font-size:1.2rem" id="calendarTitle"></div>
+          </div>
+
+          <div class="cal-nav">
+            <button id="prevBtn" class="btn ghost">◀</button>
+            <button id="todayBtn" class="btn ghost">Today</button>
+            <button id="nextBtn" class="btn ghost">▶</button>
+
+            <div class="view-toggle" style="margin-left:12px">
+              <button data-view="month" class="viewBtn active">Month</button>
+              <button data-view="week" class="viewBtn">Week</button>
+              <button data-view="day" class="viewBtn">Day</button>
+            </div>
+            <button id="newEventBtn" class="btn" style="margin-left:12px">New Event</button>
+          </div>
+        </div>
+
+        <!-- Month -->
+        <div id="monthContainer">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <div style="flex:1;font-weight:600">Sun</div>
+            <div style="flex:1;font-weight:600">Mon</div>
+            <div style="flex:1;font-weight:600">Tue</div>
+            <div style="flex:1;font-weight:600">Wed</div>
+            <div style="flex:1;font-weight:600">Thu</div>
+            <div style="flex:1;font-weight:600">Fri</div>
+            <div style="flex:1;font-weight:600">Sat</div>
+          </div>
+          <div id="monthGrid" class="month-grid"></div>
+        </div>
+
+        <!-- Week/Day -->
+        <div id="weekContainer" style="display:none;margin-top:8px">
+          <div class="week-grid">
+            <div class="time-col" id="timeColumn"></div>
+            <div>
+              <div id="weekDates" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0;margin-bottom:8px"></div>
+              <div style="display:flex">
+                <div style="width:100%;overflow:auto">
+                  <div class="week-days" id="weekGrid"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendar Event Modal -->
+  <div class="modal" id="eventModal">
+    <div class="modal-content">
+      <h3 id="modalTitle">New Event</h3>
+      <input id="evtTitle" placeholder="Title" />
+      <div style="display:flex;gap:8px;margin:5px 0;">
+        <input id="evtDate" type="date" />
+        <input id="evtStart" type="time" />
+        <input id="evtEnd" type="time" />
+      </div>
+      <textarea id="evtDesc" placeholder="Description" rows="3"></textarea>
+
+      <div class="repeat-container">
+        <label class="repeat-option">
+          <input type="checkbox" id="evtRepeatWeekly" />
+          <span>Repeat weekly on this day</span>
+        </label>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px">
+        <button id="deleteEventBtn" class="btn ghost" style="display:none;background:#fff;color:#ef4444;border:1px solid #fee2e2">Delete</button>
+        <button id="cancelEventBtn" style="background:#ccc;color:black;">Cancel</button>
+        <button id="saveEventBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ===================== API CONFIGURATION =====================
+  const API_BASE = window.location.origin;
+
+  // ===================== AUTHENTICATION =====================
+  function getCurrentUser() {
+    return sessionStorage.getItem('userEmail');
+  }
+
+  function isUserLoggedIn() {
+    return sessionStorage.getItem('isLoggedIn') === 'true';
+  }
+
+  function redirectToLogin() {
+    alert('Please log in to access this page');
+    window.location.href = '/';
+  }
+
+  // Check authentication
+  if (!isUserLoggedIn()) {
+    redirectToLogin();
+  }
+
+  const userEmail = getCurrentUser();
+  if (!userEmail) {
+    redirectToLogin();
+  }
+
+  // Display user email
+  document.getElementById('userEmail').textContent = userEmail;
+
+  // ===================== API HELPERS =====================
+  async function apiCall(endpoint, options = {}) {
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers
+        },
+        ...options
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'API call failed');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  }
+
+  // ===================== DATABASE INTEGRATION =====================
+  
+  // Load tile data from database APIs
+  async function loadTileData(tileType) {
+    try {
+      const data = await apiCall(`/${tileType}/${encodeURIComponent(userEmail)}`);
+      return data;
+    } catch (error) {
+      console.error(`Failed to load ${tileType}:`, error);
+      return [];
+    }
+  }
+
+  // Load calendar events from database
+  async function loadEvents() {
+    try {
+      const events = await apiCall(`/events/${encodeURIComponent(userEmail)}`);
+      return events;
+    } catch (error) {
+      console.error('Failed to load events:', error);
+      return [];
+    }
+  }
+
+  // Save calendar events to database
+  async function saveEvent(eventData) {
+    try {
+      const result = await apiCall('/events', {
+        method: 'POST',
+        body: JSON.stringify({
+          userEmail,
+          ...eventData
+        })
+      });
+      return result;
+    } catch (error) {
+      console.error('Failed to save event:', error);
+      throw error;
+    }
+  }
+
+  // Update calendar event in database
+  async function updateEvent(eventId, eventData) {
+    try {
+      const result = await apiCall(`/events/${eventId}`, {
+        method: 'PUT',
+        body: JSON.stringify(eventData)
+      });
+      return result;
+    } catch (error) {
+      console.error('Failed to update event:', error);
+      throw error;
+    }
+  }
+
+  // Delete calendar event from database
+  async function deleteEvent(eventId) {
+    try {
+      const result = await apiCall(`/events/${eventId}`, {
+        method: 'DELETE'
+      });
+      return result;
+    } catch (error) {
+      console.error('Failed to delete event:', error);
+      throw error;
+    }
+  }
+
+  // ===================== DASHBOARD RENDERING =====================
+
+  // Render tile content
+  function renderTile(tileType) {
+    loadTileData(tileType).then(data => {
+      const contentEl = document.getElementById(`${tileType}-content`);
+      const countEl = document.getElementById(`${tileType}-count`);
+      
+      countEl.textContent = data.length;
+      
+      if (data.length === 0) {
+        contentEl.innerHTML = `<div class="empty-state">No ${tileType} yet</div>`;
+        return;
+      }
+
+      // Show top 3 items
+      const topItems = data.slice(0, 3);
+      contentEl.innerHTML = topItems.map(item => {
+        let displayText = item.title || item.name || item.content || item.description || '';
+        
+        // Add specific formatting based on tile type
+        switch(tileType) {
+          case 'deadlines':
+            if (item.due_date) {
+              const daysLeft = Math.ceil((new Date(item.due_date) - new Date()) / (1000 * 60 * 60 * 24));
+              displayText += ` (${daysLeft > 0 ? daysLeft + ' days' : 'overdue'})`;
+            }
+            break;
+          case 'projects':
+            if (item.colleagues && item.colleagues.length > 0) {
+              displayText += ` (${item.colleagues.length} member${item.colleagues.length !== 1 ? 's' : ''})`;
+            }
+            break;
+          case 'career':
+            if (item.progress) {
+              displayText += ` (${item.progress}%)`;
+            }
+            break;
+          case 'ideas':
+            if (item.category) {
+              displayText += ` - ${item.category}`;
+            }
+            break;
+          case 'future':
+            if (item.timeline) {
+              displayText += ` (${item.timeline})`;
+            }
+            break;
+        }
+        
+        return `<div class="tile-item">${displayText}</div>`;
+      }).join('');
+      
+      if (data.length > 3) {
+        contentEl.innerHTML += `<div class="empty-state" style="margin-top: 10px;">+${data.length - 3} more items</div>`;
+      }
+    }).catch(error => {
+      const contentEl = document.getElementById(`${tileType}-content`);
+      contentEl.innerHTML = `<div class="error">Failed to load ${tileType}</div>`;
+      console.error(`Error rendering ${tileType}:`, error);
+    });
+  }
+
+  // Initialize all tiles
+  function initializeDashboard() {
+    const tileTypes = ['deadlines', 'ideas', 'projects', 'notes', 'career', 'future'];
+    tileTypes.forEach(renderTile);
+  }
+
+  // ===================== NAVIGATION =====================
+  const menuDashboard = document.getElementById("menu-dashboard");
+  const menuCalendar = document.getElementById("menu-calendar");
+  const dashboardView = document.getElementById("dashboardView");
+  const calendarView = document.getElementById("calendarView");
+
+  function showView(v) {
+    if (v === "dashboard") {
+      dashboardView.style.display = "block";
+      calendarView.style.display = "none";
+      menuDashboard.classList.add("active");
+      menuCalendar.classList.remove("active");
+    } else if (v === "calendar") {
+      dashboardView.style.display = "none";
+      calendarView.style.display = "block";
+      menuDashboard.classList.remove("active");
+      menuCalendar.classList.add("active");
+      renderCalendar();
+    }
+  }
+
+  menuDashboard.onclick = () => showView("dashboard");
+  menuCalendar.onclick = () => showView("calendar");
+
+  // Tile click handlers
+
+document.querySelectorAll('.dashboard-tile').forEach(tile => {
+  tile.addEventListener('click', () => {
+    const tileType = tile.dataset.tile;
+    
+    // Store the active tile for potential use by management pages
+    sessionStorage.setItem('activeTile', tileType);
+    
+    // Navigate to appropriate management pages
+    switch(tileType) {
+      case 'ideas':
+        window.location.href = 'ideas.html';
+        break;
+      case 'notes':
+        window.location.href = 'notes.html';
+        break;
+      case 'projects':
+        window.location.href = 'projects.html';
+        break;
+      case 'deadlines':
+        // You can create deadlines.html following the same pattern
+        alert('Deadlines management page coming soon!');
+        break;
+      case 'career':
+        // You can create career.html following the same pattern
+        alert('Career goals management page coming soon!');
+        break;
+      case 'future':
+        // You can create future.html following the same pattern
+        alert('Future work management page coming soon!');
+        break;
+      default:
+        alert(`${tileType.charAt(0).toUpperCase() + tileType.slice(1)} Management\n\nThis would redirect to a dedicated ${tileType} management page.`);
+    }
+  });
+});
+
+  // Logout
+  document.getElementById("logout").onclick = () => {
+    sessionStorage.removeItem("userEmail");
+    sessionStorage.removeItem("isLoggedIn");
+    window.location.href = "/";
+  };
+
+  // ===================== CALENDAR FUNCTIONALITY =====================
+  const monthGrid = document.getElementById("monthGrid");
+  const monthTitle = document.getElementById("calendarTitle");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const todayBtn = document.getElementById("todayBtn");
+  const viewButtons = document.querySelectorAll(".viewBtn");
+  const newEventBtn = document.getElementById("newEventBtn");
+  const eventModal = document.getElementById("eventModal");
+  const modalTitleEl = document.getElementById("modalTitle");
+  const evtTitle = document.getElementById("evtTitle");
+  const evtDate = document.getElementById("evtDate");
+  const evtStart = document.getElementById("evtStart");
+  const evtEnd = document.getElementById("evtEnd");
+  const evtDesc = document.getElementById("evtDesc");
+  const saveEventBtn = document.getElementById("saveEventBtn");
+  const cancelEventBtn = document.getElementById("cancelEventBtn");
+  const deleteEventBtn = document.getElementById("deleteEventBtn");
+  const monthContainer = document.getElementById("monthContainer");
+  const weekContainer = document.getElementById("weekContainer");
+  const weekGrid = document.getElementById("weekGrid");
+  const timeColumn = document.getElementById("timeColumn");
+  const weekDates = document.getElementById("weekDates");
+
+  let currentDate = new Date();
+  let currentView = "month";
+  let editingEventId = null;
+
+  function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function formatDateKey(d) {
+    const y = d.getFullYear();
+    const m = ('0' + (d.getMonth() + 1)).slice(-2);
+    const dd = ('0' + d.getDate()).slice(-2);
+    return `${y}-${m}-${dd}`;
+  }
+
+  function renderCalendar() {
+    if (currentView === "month") {
+      renderMonth();
+    } else {
+      renderWeek();
+    }
+  }
+
+  async function renderMonth() {
+    monthContainer.style.display = "block";
+    weekContainer.style.display = "none";
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    monthTitle.textContent = currentDate.toLocaleString(undefined, {month:'long', year:'numeric'});
+
+    const first = startOfMonth(currentDate);
+    const startDay = new Date(first);
+    startDay.setDate(first.getDate() - first.getDay());
+
+    monthGrid.innerHTML = "";
+    const events = await loadEvents();
+
+    for(let i = 0; i < 42; i++) {
+      const d = new Date(startDay);
+      d.setDate(startDay.getDate() + i);
+      const cell = document.createElement("div");
+      cell.className = "day-cell" + (d.getMonth() !== month ? " outside" : "");
+      cell.dataset.date = formatDateKey(d);
+      const header = document.createElement("div");
+      header.className = "day-header";
+      header.innerHTML = `<div class="day-number">${d.getDate()}</div><div class="muted">${d.toLocaleString(undefined,{weekday:'short'})}</div>`;
+      const evlist = document.createElement("div");
+      evlist.className = "events-list";
+      
+      const dayKey = formatDateKey(d);
+      const dayEvents = events.filter(e => {
+        if (e.date === dayKey) return true;
+        if (e.repeatWeekly) {
+          const eventDay = new Date(e.date).getDay();
+          return eventDay === d.getDay() && new Date(e.date) <= d;
+        }
+        return false;
+      });
+
+      dayEvents.slice(0,3).forEach(ev => {
+        const pill = document.createElement("div");
+        pill.className = "event-pill";
+        pill.textContent = ev.title + (ev.start ? " • " + ev.start : "");
+        pill.onclick = (evt) => { evt.stopPropagation(); openEvent(ev.id); };
+        evlist.appendChild(pill);
+      });
+      if(dayEvents.length > 3) {
+        const more = document.createElement("div");
+        more.className = "muted";
+        more.style.fontSize = "0.85rem";
+        more.textContent = `+ ${dayEvents.length - 3} more`;
+        evlist.appendChild(more);
+      }
+
+      cell.appendChild(header);
+      cell.appendChild(evlist);
+      cell.onclick = () => {
+        openNewEventForDate(formatDateKey(d));
+      };
+      monthGrid.appendChild(cell);
+    }
+  }
+
+  async function renderWeek() {
+    monthContainer.style.display = "none";
+    weekContainer.style.display = "block";
+    const start = new Date(currentDate);
+    start.setDate(currentDate.getDate() - currentDate.getDay());
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    
+    const title = `${start.toLocaleDateString()} — ${end.toLocaleDateString()}`;
+    monthTitle.textContent = title;
+
+    weekDates.innerHTML = "";
+    for(let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const el = document.createElement("div");
+      el.style.padding = "6px";
+      el.style.textAlign = "center";
+      el.innerHTML = `<div style="font-weight:700">${d.toLocaleString(undefined,{weekday:'short'})}</div><div class="muted">${d.getMonth()+1}/${d.getDate()}</div>`;
+      weekDates.appendChild(el);
+    }
+
+    timeColumn.innerHTML = "";
+    for(let h = 0; h < 24; h++) {
+      const slot = document.createElement("div");
+      slot.className = "time-slot";
+      const hr = (h % 12 === 0 ? 12 : h % 12) + (h < 12 ? " AM" : " PM");
+      slot.textContent = hr;
+      timeColumn.appendChild(slot);
+    }
+
+    weekGrid.innerHTML = "";
+    const events = await loadEvents();
+    for(let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const col = document.createElement("div");
+      col.className = "day-column";
+      col.dataset.date = formatDateKey(d);
+      col.style.minHeight = (24 * 48) + "px";
+      
+      const dayEvents = events.filter(e => {
+        if (e.date === formatDateKey(d)) return true;
+        if (e.repeatWeekly) {
+          const eventDay = new Date(e.date).getDay();
+          return eventDay === d.getDay() && new Date(e.date) <= d;
+        }
+        return false;
+      });
+
+      dayEvents.forEach(ev => {
+        const block = document.createElement("div");
+        let top = 0, height = 48;
+        if(ev.start) {
+          const [sh, sm] = ev.start.split(":").map(Number);
+          top = sh * 48 + Math.round(sm / 60 * 48);
+        }
+        if(ev.end) {
+          const [eh, em] = ev.end.split(":").map(Number);
+          const startMin = ev.start ? ev.start.split(":").map(Number) : [0, 0];
+          const startTotal = (startMin[0] || 0) * 60 + (startMin[1] || 0);
+          const endTotal = eh * 60 + em;
+          height = Math.max(28, Math.round((endTotal - startTotal) / 60 * 48));
+        }
+        block.className = "event-block";
+        block.style.top = top + "px";
+        block.style.left = "6px";
+        block.style.right = "6px";
+        block.style.height = height + "px";
+        block.textContent = ev.title + (ev.start ? " • " + ev.start : "");
+        block.onclick = (evt) => { evt.stopPropagation(); openEvent(ev.id); };
+        col.appendChild(block);
+      });
+      
+      col.onclick = (evt) => {
+        if(evt.target !== col) return;
+        const rect = col.getBoundingClientRect();
+        const y = evt.clientY - rect.top;
+        const hour = Math.floor(y / 48);
+        const mins = Math.round((y - hour * 48) / 48 * 60);
+        const dateKey = col.dataset.date;
+        openNewEventForDate(dateKey, `${String(hour).padStart(2,"0")}:${String(mins).padStart(2,"0")}`);
+      };
+      weekGrid.appendChild(col);
+    }
+  }
+
+  // Navigation
+  prevBtn.onclick = () => {
+    if(currentView === "month") currentDate.setMonth(currentDate.getMonth() - 1);
+    else currentDate.setDate(currentDate.getDate() - 7);
+    renderCalendar();
+  };
+  nextBtn.onclick = () => {
+    if(currentView === "month") currentDate.setMonth(currentDate.getMonth() + 1);
+    else currentDate.setDate(currentDate.getDate() + 7);
+    renderCalendar();
+  };
+  todayBtn.onclick = () => {
+    currentDate = new Date();
+    renderCalendar();
+  };
+
+  viewButtons.forEach(b => {
+    b.onclick = () => {
+      viewButtons.forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      currentView = b.dataset.view;
+      renderCalendar();
+    };
+  });
+
+  // Event modal functions
+  function openNewEventForDate(dateKey, time) {
+    editingEventId = null;
+    modalTitleEl.textContent = "New Event";
+    deleteEventBtn.style.display = "none";
+    evtTitle.value = "";
+    evtDate.value = dateKey;
+    evtStart.value = time || "";
+    evtEnd.value = "";
+    evtDesc.value = "";
+    document.getElementById("evtRepeatWeekly").checked = false;
+    eventModal.style.display = "flex";
+  }
+
+  async function openEvent(id) {
+    const events = await loadEvents();
+    const ev = events.find(e => e.id === id);
+    if(!ev) return alert("Event not found");
+    editingEventId = id;
+    modalTitleEl.textContent = "Edit Event";
+    deleteEventBtn.style.display = "inline-block";
+    evtTitle.value = ev.title;
+    evtDate.value = ev.date;
+    evtStart.value = ev.start || "";
+    evtEnd.value = ev.end || "";
+    evtDesc.value = ev.description || "";
+    document.getElementById("evtRepeatWeekly").checked = ev.repeatWeekly || false;
+    eventModal.style.display = "flex";
+  }
+
+  cancelEventBtn.onclick = () => { eventModal.style.display = "none"; };
+  
+  deleteEventBtn.onclick = async () => {
+    if(!editingEventId) return;
+    if(!confirm("Delete this event?")) return;
+    
+    try {
+      await deleteEvent(editingEventId);
+      eventModal.style.display = "none";
+      renderCalendar();
+    } catch (error) {
+      alert('Failed to delete event. Please try again.');
+    }
+  };
+
+  saveEventBtn.onclick = async () => {
+    const title = evtTitle.value.trim();
+    const date = evtDate.value;
+    if (!title || !date) return alert("Title and date are required");
+
+    const start = evtStart.value;
+    const end = evtEnd.value;
+    const description = evtDesc.value.trim();
+    const repeatWeekly = document.getElementById("evtRepeatWeekly").checked;
+
+    try {
+      if (editingEventId) {
+        // Update existing event
+        await updateEvent(editingEventId, {
+          title, date, start, end, description, repeatWeekly
+        });
+      } else {
+        // Create new event
+        await saveEvent({
+          title, date, start, end, description, repeatWeekly
+        });
+      }
+      
+      eventModal.style.display = "none";
+      renderCalendar();
+    } catch (error) {
+      alert('Failed to save event. Please try again.');
+    }
+  };
+
+  // Modal click outside to close
+  document.querySelectorAll(".modal").forEach(m => {
+    m.addEventListener("click", (e) => {
+      if(e.target === m) m.style.display = "none";
+    });
+  });
+
+  newEventBtn.onclick = () => openNewEventForDate(formatDateKey(currentDate));
+
+  // Keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") {
+      document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+    }
+  });
+
+  // ===================== INITIALIZATION =====================
+  initializeDashboard();
+  showView("dashboard");
+
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Recent Ideas - Note Taking</title>
+  <style>
+    :root{
+      --accent:#4f46e5;
+      --accent-2:#6d28d9;
+      --bg:#f4f4ff;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+    }
+   
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 20px 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .header p {
+      margin: 5px 0 0 0;
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      transition: background 0.3s;
+    }
+
+    .back-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px;
+    }
+
+    .notes-layout {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 30px;
+      height: calc(100vh - 200px);
+    }
+
+    .editor-section {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .note-title {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: border-color 0.3s;
+    }
+
+    .note-title:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .category-select {
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      min-width: 140px;
+    }
+
+    .category-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .note-editor {
+      flex: 1;
+      padding: 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 1rem;
+      line-height: 1.6;
+      resize: none;
+      transition: border-color 0.3s;
+      min-height: 400px;
+    }
+
+    .note-editor:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .editor-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(79,70,229,0.3);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .sidebar {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      margin: 0 0 20px 0;
+      color: #333;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 10px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+
+    .search-box:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .notes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .note-item {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .note-item:hover {
+      background: #e3f2fd;
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(79,70,229,0.15);
+    }
+
+    .note-item.active {
+      background: rgba(79,70,229,0.1);
+      border-color: var(--accent);
+      border-width: 2px;
+    }
+
+    .note-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .note-item-title {
+      font-weight: 600;
+      color: #333;
+      font-size: 1.05rem;
+      margin: 0;
+    }
+
+    .note-item-date {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .note-item-preview {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+    }
+
+    .note-item-category {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--accent);
+      color: white;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .category-technology { background: #10b981; }
+    .category-business { background: #f59e0b; }
+    .category-personal { background: #8b5cf6; }
+    .category-research { background: #06b6d4; }
+    .category-general { background: var(--muted); }
+    .category-creative { background: #ec4899; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid #e9ecef;
+    }
+
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--accent);
+      margin: 0;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin: 4px 0 0 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .save-indicator {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--success);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      transform: translateY(-100px);
+      transition: transform 0.3s;
+      z-index: 1000;
+    }
+
+    .save-indicator.show {
+      transform: translateY(0);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .notes-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      
+      .sidebar {
+        order: -1;
+        max-height: 300px;
+      }
+      
+      .container {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="save-indicator" id="saveIndicator">
+    💾 Note saved automatically!
+  </div>
+
+  <div class="header">
+    <a href="dashboard.html" class="back-btn">
+      ← Back to Dashboard
+    </a>
+    <h1>💡 Recent Ideas & Notes</h1>
+    <p>Capture your thoughts and brilliant ideas</p>
+  </div>
+
+  <div class="container">
+    <div id="loadingMessage" class="loading" style="display: none;">
+      Loading your ideas...
+    </div>
+
+    <div id="errorMessage" class="error" style="display: none;">
+      Failed to load ideas. Please try again.
+    </div>
+
+    <div class="notes-layout" id="notesLayout">
+      <div class="editor-section">
+        <div class="editor-header">
+          <input type="text" class="note-title" id="noteTitle" placeholder="Enter your idea or note title...">
+          <select class="category-select" id="categorySelect">
+            <option value="general">General</option>
+            <option value="technology">Technology</option>
+            <option value="business">Business</option>
+            <option value="personal">Personal</option>
+            <option value="research">Research</option>
+            <option value="creative">Creative</option>
+          </select>
+        </div>
+
+        <textarea class="note-editor" id="noteEditor" 
+                  placeholder="Start writing your idea here...
+
+Tips:
+• Write freely - your notes are auto-saved
+• Use categories to organize your thoughts  
+• All your ideas are preserved when you log back in
+• Click on any note from the sidebar to edit it"></textarea>
+
+        <div class="editor-actions">
+          <div>
+            <span id="wordCount" class="text-muted">0 words</span>
+            <span style="margin: 0 8px;">•</span>
+            <span id="lastSaved" class="text-muted">Not saved yet</span>
+          </div>
+          <div>
+            <button class="btn btn-secondary" id="clearBtn">
+              🗑️ Clear
+            </button>
+            <button class="btn btn-danger" id="deleteBtn" style="display: none;">
+              🗑️ Delete Note
+            </button>
+            <button class="btn btn-primary" id="saveBtn">
+              💾 Save Note
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <h3>📚 All Ideas</h3>
+        
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-number" id="totalNotes">0</div>
+            <div class="stat-label">Total Notes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="todayNotes">0</div>
+            <div class="stat-label">Today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="totalWords">0</div>
+            <div class="stat-label">Words</div>
+          </div>
+        </div>
+
+        <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search your ideas...">
+
+        <div class="notes-list" id="notesList">
+          <div class="empty-state">
+            <div class="empty-state-icon">💡</div>
+            <p><strong>No ideas yet!</strong></p>
+            <p>Start writing your first brilliant idea in the editor.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API Configuration
+    const API_BASE = window.location.origin;
+
+    // Authentication check
+    function getCurrentUser() {
+      return sessionStorage.getItem('userEmail');
+    }
+
+    function isUserLoggedIn() {
+      return sessionStorage.getItem('isLoggedIn') === 'true';
+    }
+
+    function redirectToLogin() {
+      alert('Please log in to access this page');
+      window.location.href = '/';
+    }
+
+    // Check authentication
+    if (!isUserLoggedIn()) {
+      redirectToLogin();
+    }
+
+    const userEmail = getCurrentUser();
+    if (!userEmail) {
+      redirectToLogin();
+    }
+
+    // DOM elements
+    const noteTitle = document.getElementById('noteTitle');
+    const categorySelect = document.getElementById('categorySelect');
+    const noteEditor = document.getElementById('noteEditor');
+    const saveBtn = document.getElementById('saveBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const notesList = document.getElementById('notesList');
+    const searchBox = document.getElementById('searchBox');
+    const wordCount = document.getElementById('wordCount');
+    const lastSaved = document.getElementById('lastSaved');
+    const saveIndicator = document.getElementById('saveIndicator');
+    const totalNotesEl = document.getElementById('totalNotes');
+    const todayNotesEl = document.getElementById('todayNotes');
+    const totalWordsEl = document.getElementById('totalWords');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const notesLayout = document.getElementById('notesLayout');
+
+    // State
+    let currentNoteId = null;
+    let autoSaveTimeout = null;
+    let ideas = [];
+
+    // API helper function
+    async function apiCall(endpoint, options = {}) {
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+          },
+          ...options
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+      }
+    }
+
+    // Data management
+    async function loadIdeas() {
+      try {
+        loadingMessage.style.display = 'block';
+        errorMessage.style.display = 'none';
+        notesLayout.style.display = 'none';
+
+        const data = await apiCall(`/ideas/${encodeURIComponent(userEmail)}`);
+        ideas = data;
+        
+        renderNotesList();
+        updateStats();
+        
+        loadingMessage.style.display = 'none';
+        notesLayout.style.display = 'grid';
+      } catch (error) {
+        console.error("Failed to load ideas:", error);
+        loadingMessage.style.display = 'none';
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = 'Failed to load ideas. Please refresh the page.';
+      }
+    }
+
+    function formatDate(dateString) {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function countWords(text) {
+      return text.trim() ? text.trim().split(/\s+/).length : 0;
+    }
+
+    // Note operations
+    async function saveCurrentNote() {
+      const title = noteTitle.value.trim();
+      const content = noteEditor.value.trim();
+      const category = categorySelect.value;
+
+      if (!title && !content) {
+        return; // Don't save empty notes
+      }
+
+      try {
+        saveBtn.textContent = 'Saving...';
+        saveBtn.disabled = true;
+
+        if (currentNoteId) {
+          // Update existing note
+          await apiCall(`/ideas/${currentNoteId}`, {
+            method: "PUT",
+            body: JSON.stringify({ 
+              title: title || 'Untitled', 
+              content, 
+              category 
+            })
+          });
+        } else {
+          // Create new note
+          const result = await apiCall("/ideas", {
+            method: "POST",
+            body: JSON.stringify({
+              user_email: userEmail,
+              title: title || 'Untitled',
+              content,
+              category,
+              created_date: new Date().toISOString()
+            })
+          });
+          currentNoteId = result.id;
+        }
+
+        updateLastSaved();
+        showSaveIndicator();
+        await loadIdeas(); // Refresh the list
+        
+      } catch (error) {
+        console.error("Failed to save note:", error);
+        alert("Failed to save note. Please try again.");
+      } finally {
+        saveBtn.textContent = 'Save Note';
+        saveBtn.disabled = false;
+      }
+    }
+
+    async function loadNote(ideaId) {
+      const idea = ideas.find(i => i.id === ideaId);
+      
+      if (idea) {
+        currentNoteId = ideaId;
+        noteTitle.value = idea.title;
+        noteEditor.value = idea.content || '';
+        categorySelect.value = idea.category || 'general';
+        updateWordCount();
+        updateLastSaved(idea.created_date);
+        deleteBtn.style.display = 'inline-flex';
+      }
+    }
+
+    async function deleteCurrentNote() {
+      if (!currentNoteId) return;
+      
+      if (confirm('Are you sure you want to delete this note?')) {
+        try {
+          await apiCall(`/ideas/${currentNoteId}`, {
+            method: "DELETE"
+          });
+          
+          clearEditor();
+          await loadIdeas();
+          
+        } catch (error) {
+          console.error("Failed to delete note:", error);
+          alert("Failed to delete note. Please try again.");
+        }
+      }
+    }
+
+    function clearEditor() {
+      currentNoteId = null;
+      noteTitle.value = '';
+      noteEditor.value = '';
+      categorySelect.value = 'general';
+      updateWordCount();
+      lastSaved.textContent = 'Not saved yet';
+      deleteBtn.style.display = 'none';
+    }
+
+    // UI updates
+    function renderNotesList(filteredIdeas = null) {
+      const notesToRender = filteredIdeas || ideas;
+      
+      if (notesToRender.length === 0) {
+        notesList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">💡</div>
+            <p><strong>No ideas yet!</strong></p>
+            <p>Start writing your first brilliant idea in the editor.</p>
+          </div>
+        `;
+        return;
+      }
+
+      notesList.innerHTML = notesToRender.map(idea => `
+        <div class="note-item ${idea.id === currentNoteId ? 'active' : ''}" data-id="${idea.id}">
+          <div class="note-item-category category-${idea.category || 'general'}">${idea.category || 'general'}</div>
+          <div class="note-item-header">
+            <h4 class="note-item-title">${idea.title}</h4>
+            <span class="note-item-date">${formatDate(idea.created_date)}</span>
+          </div>
+          <div class="note-item-preview">${(idea.content || '').substring(0, 100)}${(idea.content || '').length > 100 ? '...' : ''}</div>
+        </div>
+      `).join('');
+
+      // Add click handlers
+      notesList.querySelectorAll('.note-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          const ideaId = parseInt(item.dataset.id);
+          loadNote(ideaId);
+          
+          // Update active state
+          notesList.querySelectorAll('.note-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+        });
+      });
+    }
+
+    function updateStats() {
+      const today = new Date().toDateString();
+      const todayCount = ideas.filter(i => new Date(i.created_date).toDateString() === today).length;
+      const totalWordCount = ideas.reduce((sum, idea) => sum + countWords(idea.content || ''), 0);
+
+      totalNotesEl.textContent = ideas.length;
+      todayNotesEl.textContent = todayCount;
+      totalWordsEl.textContent = totalWordCount;
+    }
+
+    function updateWordCount() {
+      const words = countWords(noteEditor.value);
+      wordCount.textContent = `${words} words`;
+    }
+
+    function updateLastSaved(timestamp = null) {
+      if (timestamp) {
+        lastSaved.textContent = `Saved ${formatDate(timestamp)}`;
+      } else {
+        lastSaved.textContent = `Saved ${formatDate(new Date())}`;
+      }
+    }
+
+    function showSaveIndicator() {
+      saveIndicator.classList.add('show');
+      setTimeout(() => {
+        saveIndicator.classList.remove('show');
+      }, 2000);
+    }
+
+    // Event listeners
+    noteEditor.addEventListener('input', () => {
+      updateWordCount();
+      
+      // Auto-save after 3 seconds of inactivity
+      if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+      }
+      autoSaveTimeout = setTimeout(() => {
+        if (noteTitle.value.trim() || noteEditor.value.trim()) {
+          saveCurrentNote();
+        }
+      }, 3000);
+    });
+
+    noteTitle.addEventListener('input', () => {
+      // Auto-save when title changes
+      if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+      }
+      autoSaveTimeout = setTimeout(() => {
+        if (noteTitle.value.trim() || noteEditor.value.trim()) {
+          saveCurrentNote();
+        }
+      }, 2000);
+    });
+
+    categorySelect.addEventListener('change', () => {
+      if (currentNoteId) {
+        saveCurrentNote();
+      }
+    });
+
+    saveBtn.addEventListener('click', () => {
+      saveCurrentNote();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (noteTitle.value.trim() || noteEditor.value.trim()) {
+        if (confirm('Are you sure you want to clear the editor? Unsaved changes will be lost.')) {
+          clearEditor();
+        }
+      } else {
+        clearEditor();
+      }
+    });
+
+    deleteBtn.addEventListener('click', () => {
+      deleteCurrentNote();
+    });
+
+    searchBox.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      
+      if (query.trim() === '') {
+        renderNotesList();
+        return;
+      }
+      
+      const filteredIdeas = ideas.filter(idea => 
+        idea.title.toLowerCase().includes(query) ||
+        (idea.content && idea.content.toLowerCase().includes(query)) ||
+        (idea.category && idea.category.toLowerCase().includes(query))
+      );
+      
+      renderNotesList(filteredIdeas);
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveCurrentNote();
+      }
+      
+      if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        clearEditor();
+        noteTitle.focus();
+      }
+    });
+
+    // Initialize
+    function init() {
+      loadIdeas();
+      updateWordCount();
+      
+      // Focus on title for new note
+      noteTitle.focus();
+    }
+
+    init();
+  </script>
+</body>
+</html>
