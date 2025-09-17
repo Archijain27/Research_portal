@@ -36,7 +36,7 @@ if (isProduction && process.env.DATABASE_URL) {
       
       // Handle ALTER TABLE ADD COLUMN errors gracefully
       if (pgQuery.includes('ALTER TABLE') && pgQuery.includes('ADD COLUMN')) {
-        pool.query(pgQuery, params)
+        return pool.query(pgQuery, params)
           .then(result => {
             if (callback) callback.call({ 
               lastID: result.rows && result.rows[0] ? result.rows[0].id : null,
@@ -53,7 +53,7 @@ if (isProduction && process.env.DATABASE_URL) {
             }
           });
       } else {
-        pool.query(pgQuery, params)
+        return pool.query(pgQuery, params)
           .then(result => {
             if (callback) callback.call({ 
               lastID: result.rows && result.rows[0] ? result.rows[0].id : null,
@@ -71,7 +71,7 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgQuery = pgQuery.replace(/\?/g, () => `$${paramIndex++}`);
       
-      pool.query(pgQuery, params)
+      return pool.query(pgQuery, params)
         .then(result => callback(null, result.rows[0] || null))
         .catch(err => {
           console.error('Database error:', err);
@@ -83,7 +83,7 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgQuery = pgQuery.replace(/\?/g, () => `$${paramIndex++}`);
       
-      pool.query(pgQuery, params)
+      return pool.query(pgQuery, params)
         .then(result => callback(null, result.rows || []))
         .catch(err => {
           console.error('Database error:', err);
@@ -769,3 +769,4 @@ app.listen(port, () => {
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Database: ${isProduction && process.env.DATABASE_URL ? 'PostgreSQL' : 'SQLite'}`);
 });
+
